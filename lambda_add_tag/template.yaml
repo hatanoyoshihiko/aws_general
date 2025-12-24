@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  AutoEnvTagFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.13
+      Handler: app.lambda_handler
+      CodeUri: src/
+      Timeout: 60
+      MemorySize: 128
+      Environment:
+        Variables:
+          TAG_KEY: env
+          TAG_VALUE: dev
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ec2:DescribeInstances
+                - ec2:CreateTags
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - rds:DescribeDBClusters
+                - rds:DescribeDBInstances
+                - rds:ListTagsForResource
+                - rds:AddTagsToResource
+              Resource: "*"
+      Events:
+        HourlySchedule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 hour)
+            Enabled: true
